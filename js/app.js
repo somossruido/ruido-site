@@ -28,7 +28,7 @@
   ['link-wa', 'foot-wa'].forEach(function (id) { $('#' + id).href = S.canais.whatsapp; });
   ['link-ig', 'foot-ig'].forEach(function (id) { $('#' + id).href = S.canais.instagram; });
   $('#props-lead').textContent = S.propostas.length + ' propostas organizadas em ' + S.categorias.length +
-    ' perfis de aluno. Escolha o seu perfil abaixo ou veja todas.';
+    ' perfis de aluno. Escolha o seu perfil abaixo ou veja todas. Toque em "Ler mais" para ver a proposta completa.';
 
   /* ---------- marquee ---------- */
   var mq = '';
@@ -57,20 +57,22 @@
   var header = $('.header');
   var body = $('#props-body');
   var uid = 0;
-
-  function card(p, wide) {
-    return '<article class="card card--static' + (wide ? ' card--wide' : '') + '" data-reveal>' +
-      '<div class="card__btn">' +
+  function card(p) {
+    var id = 'p' + (++uid);
+    return '<article class="card" data-reveal>' +
+      '<h4 class="card__h"><button class="card__btn" type="button" aria-expanded="false" aria-controls="' + id + '">' +
         '<span class="card__top">' + window.icon(p.icone, 'ico') + '<span class="card__num">' + esc(p.numero) + '</span></span>' +
-        '<h4 class="card__title">' + esc(p.titulo) + '</h4>' +
-        '<p class="card__txt">' + esc(p.texto) + '</p>' +
-      '</div>' +
+        '<span class="card__title">' + esc(p.titulo) + '</span>' +
+        '<span class="card__sum">' + esc(p.resumo) + '</span>' +
+        '<span class="card__more"><span class="lbl">Ler mais</span><i aria-hidden="true"></i></span>' +
+      '</button></h4>' +
+      '<div class="card__panel" id="' + id + '" role="region" aria-label="' + esc(p.titulo) + ' — proposta completa"><div><p>' + esc(p.texto) + '</p></div></div>' +
     '</article>';
   }
 
   var html = cats.map(function (c, ci) {
     var list = S.propostas.filter(function (p) { return p.categoria === c.id; });
-    var cards = list.map(function (p) { return card(p, false); }).join('');
+    var cards = list.map(function (p) { return card(p); }).join('');
     return '<section class="group" id="cat-' + c.id + '" data-cat="' + c.id + '" aria-labelledby="h-' + c.id + '">' +
       '<header class="group__head" data-reveal><span class="group__n">0' + (ci + 1) + '</span>' +
       '<h3 id="h-' + c.id + '">' + esc(c.nome) + '</h3><span class="group__c">' + list.length + (list.length === 1 ? ' proposta' : ' propostas') + '</span></header>' +
@@ -120,6 +122,16 @@
     b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
   });
   applyFilter(cats[0].id, false);
+
+  /* expandir cards */
+  body.addEventListener('click', function (e) {
+    var b = e.target.closest('.card__btn'); if (!b) return;
+    var card = b.closest('.card');
+    var open = b.getAttribute('aria-expanded') !== 'true';
+    b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    card.classList.toggle('is-open', open);
+    b.querySelector('.lbl').textContent = open ? 'Fechar' : 'Ler mais';
+  });
 
   /* ---------- revelar ao rolar ---------- */
   var revealEls = $$('[data-reveal]');
